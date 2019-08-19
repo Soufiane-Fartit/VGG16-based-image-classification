@@ -18,8 +18,6 @@ def vgg2c():
 	x = Dense(2, activation='softmax', name='predictions')(x)
 
 	#Create your own model 
-	my_model = Model(input=input, output=x)
+	my_model = Model(inputs=input, outputs=x)
 
 	return my_model
-
-
