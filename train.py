@@ -1,4 +1,6 @@
-from modelvgg2c import vgg2c
+import keras
+import tensorflow as tf
+
 
 from keras.preprocessing import image
 from keras.applications.vgg16 import preprocess_input
@@ -8,13 +10,6 @@ import glob
 import numpy as np
 import cv2
 
-model = vgg2c()
-
-for layer in model.layers[:2]:
-    layer.trainable=False
-
-model.compile(optimizer='adam',loss='categorical_crossentropy')
-model.summary()
 
 
 dogs_train = []
@@ -27,62 +22,50 @@ cats_train_target = []
 dogs_test_target = []
 cats_test_target = []
 
-count=0
+
 for filename in glob.glob('dataset/training_set/dogs/*.jpg'): #assuming gif
-    im = cv2.imread(filename)
-    if count == 200:
-        break
-    try:
-        im = cv2.resize(im,(224,224))
-        #im = np.expand_dims(im, axis=0)
-        im = preprocess_input(im)
-        dogs_train.append(im)
-	dogs_train_target.append([1,0])
-	count+=1
-    except:
-        pass
-count=0
+  im = cv2.imread(filename)
+  try:
+    im = cv2.resize(im,(224,224))
+    #im = np.expand_dims(im, axis=0)
+    im = preprocess_input(im)
+    dogs_train.append(im)
+    dogs_train_target.append([1,0])
+  except:
+    pass
+
 for filename in glob.glob('dataset/training_set/cats/*.jpg'): #assuming gif
-    im = cv2.imread(filename)
-    if count == 200:
-        break
-    try:
-        im = cv2.resize(im,(224,224))
-        #im = np.expand_dims(im, axis=0)
-        im = preprocess_input(im)
-        cats_train.append(im)
-	cats_train_target.append([0,1])
-	count+=1
-    except:
-        pass
-count=0
+  im = cv2.imread(filename)
+  try:
+    im = cv2.resize(im,(224,224))
+    #im = np.expand_dims(im, axis=0)
+    im = preprocess_input(im)
+    cats_train.append(im)
+    cats_train_target.append([0,1])
+  except:
+    pass
+
 for filename in glob.glob('dataset/test_set/dogs/*.jpg'): #assuming gif
-    im = cv2.imread(filename)
-    if count == 200:
-        break
-    try:
-        im = cv2.resize(im,(224,224))
-        #im = np.expand_dims(im, axis=0)
-        im = preprocess_input(im)
-        dogs_test.append(im)
-	dogs_test_target.append([1,0])
-	count+=1
-    except:
-        pass
-count=0
+  im = cv2.imread(filename)
+  try:
+    im = cv2.resize(im,(224,224))
+    #im = np.expand_dims(im, axis=0)
+    im = preprocess_input(im)
+    dogs_test.append(im)
+    dogs_test_target.append([1,0])
+  except:
+    pass
+
 for filename in glob.glob('dataset/test_set/cats/*.jpg'): #assuming gif
-    im = cv2.imread(filename)
-    if count == 200:
-        break
-    try:
-        im = cv2.resize(im,(224,224))
-        #im = np.expand_dims(im, axis=0)
-        im = preprocess_input(im)
-        cats_test.append(im)
-	cats_test_target.append([0,1])
-	count+=1
-    except:
-        pass
+  im = cv2.imread(filename)
+  try:
+    im = cv2.resize(im,(224,224))
+    #im = np.expand_dims(im, axis=0)
+    im = preprocess_input(im)
+    cats_test.append(im)
+    cats_test_target.append([0,1])
+  except:
+    pass
 
 dogs_train = np.array(dogs_train)
 cats_train = np.array(cats_train)
@@ -103,9 +86,19 @@ test_targets = np.concatenate((dogs_test_target, cats_test_target))
 train_set, train_targets = shuffle(train_set, train_targets)
 test_set, test_targets = shuffle(test_set, test_targets)
 
-model.fit(train_set, train_targets, epochs = 5)
 
-predicted = model.predict(test_set)
-accuracy = accuracy_score(predicted, test_targets)
-print("accuracy = ", accuracy)
+
+config = tf.ConfigProto( device_count = {'GPU': 1 , 'CPU': 56} ) 
+sess = tf.Session(config=config) 
+keras.backend.set_session(sess)
+
+model = vgg2c()
+
+for layer in model.layers[:2]:
+    layer.trainable=False
+
+model.compile(optimizer='adam',loss='categorical_crossentropy', metrics=['accuracy'])
+model.summary()
+
+
 
